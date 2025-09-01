@@ -1,0 +1,34 @@
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { connectDB } from "@/lib/firebase";
+import Post from "@/models/Post";
+
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+  await connectDB();
+  const post = await Post.findOne({ slug }).lean();
+  if (!post) return { title: "Post • Not found" };
+  return { title: `${post.title} • Blog` };
+}
+
+export default async function PostPage({ params }) {
+  const { slug } = params;
+  await connectDB();
+  const post = await Post.findOne({ slug }).lean();
+  if (!post) return <div>Not found</div>;
+  return (
+    <>
+      <Navbar />
+      <main className="container py-10">
+        <h1 className="text-3xl md:text-4xl font-semibold">{post.title}</h1>
+        <div className="text-sm text-zinc-500 mt-1">
+          {new Date(post.publishedAt).toLocaleDateString()} • {post.tags?.join(", ")}
+        </div>
+        <article className="prose prose-invert max-w-none mt-6">
+          <p>{post.content}</p>
+        </article>
+      </main>
+      <Footer />
+    </>
+  );
+}

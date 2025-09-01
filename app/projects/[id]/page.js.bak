@@ -1,0 +1,50 @@
+import { connectDB } from "@/lib/firebase";
+import Project from "@/models/Project";
+import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+
+export async function generateMetadata({ params }) {
+  const { id } = params;
+  await connectDB();
+  const p = await Project.findById(id).lean();
+  if (!p) return { title: "Project • Not found" };
+  return { title: `${p.title} • Project` };
+}
+
+export default async function ProjectPage({ params }) {
+  const { id } = params;
+  await connectDB();
+  const p = await Project.findById(id).lean();
+  if (!p) return <div>Not found</div>;
+  return (
+    <>
+      <Navbar />
+      <main className="container py-10">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Image
+            src={p.image || "https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?q=80&w=1200&auto=format&fit=crop"}
+            alt={p.title}
+            width={1200}
+            height={630}
+            className="rounded-2xl object-cover w-full h-full"
+          />
+          <div className="card p-6">
+            <h1 className="text-3xl font-semibold">{p.title}</h1>
+            <p className="text-zinc-300 mt-2">{p.description}</p>
+            <div className="flex gap-3 mt-4">
+              {p.link && <a className="btn" href={p.link} target="_blank">Live ↗</a>}
+              {p.repo && <a className="btn" href={p.repo} target="_blank">Code ↗</a>}
+              <Link className="btn" href="/projects">← Back</Link>
+            </div>
+            {p.tags?.length ? (
+              <div className="mt-4 text-sm text-zinc-400">Tags: {p.tags.join(", ")}</div>
+            ) : null}
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}

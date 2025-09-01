@@ -1,0 +1,9 @@
+import { connectDB } from "@/lib/firebase";
+import Post from "@/models/Post";
+
+export async function GET(_req, { params }) {
+  await connectDB();
+  const post = await Post.findOne({ slug: params.slug });
+  if (!post) return new Response("Not found", { status: 404 });
+  return Response.json(post);
+}
